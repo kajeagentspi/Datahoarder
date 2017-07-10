@@ -1,4 +1,10 @@
 #!/bin/bash
+##################################################################
+# Description: Uses wget's spider with aria2c's parallel downloading
+# Usage: ./theripper.sh "opendirlink" "opendirsubstring"
+# Example ./theripper.sh "libgen.io/comics0/_DC/100%20Bullets%20-%20Deluxe%20Edition%20%282013%29%20%5b1-5%5d/" "libgen.io/comics0/_DC"
+# Future plan: Implement GNU Parallel so two or more files can be downloaded at the same time.
+####################################################################
 URL=$1
 ROOTHPATH=$2
 echo "Creating list of urls..."
@@ -16,10 +22,3 @@ while read link; do
     DOWNLOADLINK=$(echo $link|awk '$0="http://"$0') #since the links in the files doesn't have an identifier aria2c will error
     aria2c --continue=true --max-connection-per-server=16 --split=16 --min-split-size=1M --dir="$FILEPATH" "$DOWNLOADLINK"
 done  < $LIST
-
-#Usage
-#./theripper.sh opendirlink opendirsubstring
-#remove http:// or http:// from opendirlink for it to work
-#Example
-#./theripper.sh "libgen.io/comics0/_DC/100%20Bullets%20-%20Deluxe%20Edition%20%282013%29%20%5b1-5%5d/" "libgen.io/comics0/_DC"
-#Created by kajeagentspi
