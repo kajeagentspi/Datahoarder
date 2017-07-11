@@ -42,7 +42,11 @@ download() {
 
       echo "Saving to $FILE_PATH"
       # Since the links in the file doesn't have an identifier aria2c will error
-      DOWNLOAD_LINK=$(echo $link | awk '$0="http://"$0')
+      IDN="http"
+      if [[ ${URL:0:5} == "https" ]]; then
+        IDN="https"
+      fi
+      DOWNLOAD_LINK=$(echo $link | sed -e "s/$URL/$IDN:\/\/$URL/g")
       aria2c --continue=true \
         --max-connection-per-server=$MAX_CONNECTIONS_PER_SERVER \
         --split=16 --min-split-size=1M --dir="$FILE_PATH" "$DOWNLOAD_LINK"
