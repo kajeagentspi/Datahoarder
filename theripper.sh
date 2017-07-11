@@ -1,24 +1,63 @@
-#!/bin/bash
+#!/usr/bin/env bash
+
 ##################################################################
 # Description: Uses wget's spider with aria2c's parallel downloading
 # Usage: ./theripper.sh "opendirlink" "opendirsubstring"
 # Example ./theripper.sh "libgen.io/comics0/_DC/100%20Bullets%20-%20Deluxe%20Edition%20%282013%29%20%5b1-5%5d/" "libgen.io/comics0/_DC"
-# Future plan: Implement GNU Parallel so two or more files can be downloaded at the same time.
+#
+# TODO: Implement GNU Parallel so two or more files can be downloaded at the same time.
 ####################################################################
+
+set -e
+
 URL=$1
-ROOTHPATH=$2
+ROOT_PATH=$2
+LIST=$TMP/list-$$.txt
+MAX_CONNECTIONS_PER_SERVER=16
+
+usage() {
+  cat <<EOF
+Uses wget's spider with aria2c's parallel for downloading open
+directories.
+
+Usage: $SCRIPT_NAME [options] URL PATH
+EOF
+}
+
+spider() {
+  local logfile=$TMP/opendir-$$.log
+  wget -o $logfile -e robots=off -r --no-parent --spider $URL
+  cat $logfile | grep -i Removing | sed -e "s/Removing //g" | \
+    sed 's/.$//' | sed '/index.html/d' > $LIST
+  echo $URL | sed 's/[/].*$//' | xargs rm -rf
+}
+
+download() {
+  while read link; do
+      echo "Downloading $link"
+
+      # Remove text after last /
+      FULL_PATH=$(echo $link | sed 's%/[^/]*$%/%')
+      FILE_PATH=${FULL_PATH#${ROOT_PATH}/}
+
+      echo "Saving to $FILE_PATH"
+      # Since the links in the file doesn't have an identifier aria2c will error
+      DOWNLOAD_LINK=$(echo $link | awk '$0="http://"$0')
+      aria2c --continue=true \
+        --max-connection-per-server=$MAX_CONNECTIONS_PER_SERVER \
+        --split=16 --min-split-size=1M --dir="$FILE_PATH" "$DOWNLOAD_LINK"
+  done  < $LIST
+}
+
+if [[ -z $1 || -z $2 ]]; then
+  usage
+  exit 1
+fi
+
 echo "Creating list of urls..."
-wget -o ./opendir.log -e robots=off -r --no-parent --spider $URL
-cat ./opendir.log|grep -i Removing|sed -e "s/Removing //g"|sed 's/.$//'|sed '/index.html/d' > list.txt
-rm opendir.log
-echo $URL|sed 's/[/].*$//'|xargs rm -rf
+spider
 echo "Index created!"
-LIST='list.txt'
-while read link; do
-    echo "Downloading $link"
-    FULLPATH=$(echo $link|sed 's%/[^/]*$%/%') #Remove text after last /
-    FILEPATH=${FULLPATH#${ROOTHPATH}/}
-    echo "Saving to $FILEPATH"
-    DOWNLOADLINK=$(echo $link|awk '$0="http://"$0') #since the links in the files doesn't have an identifier aria2c will error
-    aria2c --continue=true --max-connection-per-server=16 --split=16 --min-split-size=1M --dir="$FILEPATH" "$DOWNLOADLINK"
-done  < $LIST
+download
+
+# Cleanup
+trap "rm -f '$LIST'" EXIT
