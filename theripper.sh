@@ -7,24 +7,18 @@
 ####################################################################
 URL=$1
 ROOTHPATH=$2
-LIST=$3
 echo "Creating list of urls..."
-wget -o ./${LIST}.log -e robots=off -r --no-parent --spider $URL
-cat ./${LIST}.log|grep -i Removing|sed -e "s/Removing //g"|sed 's/.$//'|sed '/index.html/d' > $LIST
-rm ${LIST}.log
+wget -o ./opendir.log -e robots=off -r --no-parent --spider $URL
+cat ./opendir.log|grep -i Removing|sed -e "s/Removing //g"|sed 's/.$//'|sed '/index.html/d' > list.txt
+rm opendir.log
 echo $URL|sed 's/[/].*$//'|xargs rm -rf
 echo "Index created!"
+LIST='list.txt'
 while read link; do
     echo "Downloading $link"
     FULLPATH=$(echo $link|sed 's%/[^/]*$%/%') #Remove text after last /
     FILEPATH=${FULLPATH#${ROOTHPATH}/}
     echo "Saving to $FILEPATH"
     DOWNLOADLINK=$(echo $link|awk '$0="http://"$0') #since the links in the files doesn't have an identifier aria2c will error
-    echo $DOWNLOADLINK >> ${LIST}.down
-    echo " dir=$FILEPATH" >> ${LIST}.down
-    echo " continue=true" >> ${LIST}.down
-    echo " max-connection-per-server=16" >> ${LIST}.down
-    echo " split=16" >> ${LIST}.down
-    echo " min-split-size=1M\n" >> ${LIST}.down
+    aria2c --continue=true --max-connection-per-server=16 --split=16 --min-split-size=1M --dir="$FILEPATH" "$DOWNLOADLINK"
 done  < $LIST
-aria2c -i ${LIST}.down -j 10
