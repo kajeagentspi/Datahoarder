@@ -24,31 +24,24 @@ EOF
 
 spider() {
 	local logfile=./opendir-$$.log
-	wget -o $logfile -e robots=off -r --no-parent --spider "$URL"
-	cat $logfile | grep -i Removing | sed -e "s/Removing //g" | \
-	sed 's/.$//' | sed '/index.html/d' > $LIST
-
-	#Delete the folder made by wget
-	echo $ROOT_PATH | sed 's/[/].*$//' | xargs rm -rf
+	wget -o $logfile -e robots=off -r --no-parent --spider "$URL" 
+	#Grabs all lines with the pattern --2017-07-12 15:40:31-- then from the results removes everthing that ends in / (meaning it's a directory
+	#then removes pattern from every line
+	cat $logfile | grep -i '^--[0-9][0-9][0-9][0-9]-[0-9][0-9]-[0-9][0-9] [0-9][0-9]:[0-9][0-9]:[0-9][0-9]--' | \
+	grep '[^'/']$'  | sed -e 's/^--[0-9][0-9][0-9][0-9]-[0-9][0-9]-[0-9][0-9] [0-9][0-9]:[0-9][0-9]:[0-9][0-9]--  //g' > $LIST
+	#Delete the folder made by wget (deletes all empty directories in the directory this script is run
+	find . -type d -empty -delete #If you have a fix for this contact me since it should only delete the folder created by wget
 }
 
 download() {
 	while read link; do
-
+		#urldecode the links
+		DECODED_LINK=$(echo $link | printf "%b\n" "$(sed 's/+/ /g; s/%\([0-9a-f][0-9a-f]\)/\\x\1/g;')";)
+		DECODED_ROOT_PATH=$(echo $ROOT_PATH | printf "%b\n" "$(sed 's/+/ /g; s/%\([0-9a-f][0-9a-f]\)/\\x\1/g;')";)
 		# Remove text after last /
-		FULL_PATH=$(echo $link | sed 's%/[^/]*$%/%')
-		FILE_PATH=${FULL_PATH#${ROOT_PATH}/}
-
-		# Since the links in the file doesn't have an identifier aria2c will error
-		IDN="http://"
-		if [[ ${URL:0:5} == "https" ]]; then
-		IDN="https://"
-		elif [[ ${URL:0:3} == "ftp" ]]; then
-		IDN="ftp://"
-		fi
-		DOWNLOAD_LINK=$(echo "$IDN$link")
-		#Enclosed the Downlaod link in quotes since echo replaces multiple spaces with a single one
-		echo "${DOWNLOAD_LINK}" >> link-$$.down
+		FULL_PATH=$(echo $DECODED_LINK | sed 's%/[^/]*$%/%')
+		FILE_PATH=${FULL_PATH#${DECODED_ROOT_PATH}/}
+		echo "${link}" >> link-$$.down
 		echo " dir=$FILE_PATH" >> link-$$.down
 		echo " continue=true" >> link-$$.down
 		echo " max-connection-per-server=$MAX_CONNECTIONS_PER_SERVER" >> link-$$.down
