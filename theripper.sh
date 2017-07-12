@@ -26,7 +26,7 @@ EOF
 
 spider() {
   local logfile=$TMP/opendir-$$.log
-  wget -o $logfile -e robots=off -r --no-parent --spider $URL
+  wget -o $logfile -e robots=off -r --no-parent --spider "$URL"
   cat $logfile | grep -i Removing | sed -e "s/Removing //g" | \
     sed 's/.$//' | sed '/index.html/d' > $LIST
   echo $URL | sed 's/[/].*$//' | xargs rm -rf
