@@ -8,6 +8,6 @@ Scripts for grabbing files of the Internet
 
 ***Usage:*** ./theripper.sh "opendirlink" "opendirsubstring"
 
-***Example*** ./theripper.sh "libgen.io/comics0/_DC/100%20Bullets%20-%20Deluxe%20Edition%20%282013%29%20%5b1-5%5d/" "libgen.io/comics0/_DC"
+***Example***./theripper.sh "http://link.com/blabla/doraemon/" "link.com/blabla" 
 
-TODO: Implement GNU Parallel so two or more files can be downloaded at the same time.
+***Note:*** Make sure that the path doesn't contain %20's or others. You can use this site http://www.asiteaboutnothing.net/c_decode-url.html
