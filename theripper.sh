@@ -24,7 +24,7 @@ EOF
 
 spider() {
 	local logfile=./opendir-$$.log
-	wget -o $logfile -e robots=off -r --no-parent --spider "$URL" 
+	wget -o $logfile -e robots=off -r --no-parent --spider "$URL" || true
 	#Grabs all lines with the pattern --2017-07-12 15:40:31-- then from the results removes everthing that ends in / (meaning it's a directory
 	#then removes pattern from every line
 	cat $logfile | grep -i '^--[0-9][0-9][0-9][0-9]-[0-9][0-9]-[0-9][0-9] [0-9][0-9]:[0-9][0-9]:[0-9][0-9]--' | \
