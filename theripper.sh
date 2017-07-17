@@ -49,7 +49,7 @@ download() {
 		echo -e " min-split-size=1M\n" >> link-$$.down
 	done  < $LIST
 	#Download links
-	aria2c -i link-$$.down -j 10
+	aria2c -i link-$$.down -j 10 || true
 
 }
 
