@@ -8,4 +8,4 @@ Scripts for grabbing files of the Internet
 
 ***Usage:*** ./theripper.sh "opendirlink" "opendirsubstring"
 
-***Example***./theripper.sh "http://link.com/blabla/doraemon/" "http://link.com/blabla" 
+***Example*** ./theripper.sh "http://link.com/blabla/doraemon/" "http://link.com/blabla" 
