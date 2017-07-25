@@ -52,7 +52,7 @@ download() {
 		echo " continue=true" >> link-$$.down
 		echo " max-connection-per-server=$MAX_CONNECTIONS_PER_SERVER" >> link-$$.down
 		echo " split=16" >> link-$$.down
-		echo " user-agent=Mozilla/5.0 (Macintosh; Intel Mac OS X 10.12; rv:52.0) Gecko/20100101 Firefox/52.0" >> link-$$.down
+		echo " user-agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/59.0.3071.115 Safari/537.36" >> link-$$.down
 		echo " header=Accept: text/html" >> link-$$.down
 		echo -e " min-split-size=1M\n" >> link-$$.down
 	done  < $LIST
